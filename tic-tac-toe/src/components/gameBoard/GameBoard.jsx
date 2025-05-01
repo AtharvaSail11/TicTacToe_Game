@@ -1,0 +1,105 @@
+import { useEffect, useRef, useState } from "react"
+
+const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState,currentDevice})=>{
+    const [moves,setMoves]=useState([]);
+    const positions=[1,2,3,4,5,6,7,8,9];
+    console.log(positions);
+    const gameboardStyles={
+        PC:"h-[400px] w-[400px]",
+        Mobile:"h-[300px] w-[300px]"
+    }
+
+    useEffect(()=>{
+        console.log("Current Device:",currentDevice);
+    },[currentDevice])
+
+
+    const handlePlayerMove=(position)=>{
+            let moveArray=[...moves];
+            moveArray.push({pos:position,move:Symbol})
+            setMoves(moveArray);
+            console.log("moves:",{pos:position,move:Symbol});
+            console.log("websocket readyState:",ws.readyState);
+            console.log("Ready state 2:",wsReady);
+
+            if(ws.readyState===WebSocket.OPEN){
+                console.log("move to send:",{type:"move",payload:{pos:position,move:Symbol,gameId:gameId,myId:myId,oppId:oppId}});
+                ws.send(JSON.stringify({type:"move",payload:{pos:position,move:Symbol,gameId:gameId,myId:myId,oppId:oppId}}));
+            }
+    }
+
+function handleRematch(){;
+    let playAgain=confirm("Do you want to play again?");
+    if(playAgain){
+        ws.send(JSON.stringify({type:"rematch",payload:{confirmation:true,gameId:gameId,senderId:myId,oppId:oppId}}));
+        setIsWaiting(true);
+    }else{
+        ws.send(JSON.stringify({type:"rematch",payload:{confirmation:false,gameId:gameId,senderId:myId,oppId:oppId}}));
+    }
+}
+
+function updatePlayerMove(e){
+    let data=JSON.parse(e.data);
+    if(data.type==="wait"){
+        let wrongPos=data.pos;
+        alert("Wait for the opponent to play!");
+        setMoves((prev)=>{
+            let newArr=prev.filter((item)=>item.pos !== wrongPos);
+            return newArr;
+        }
+    );
+    }
+    else if(data.type==="moveUpdate"){
+        let moveData=data.moveData;
+        console.log("move data recieved is:",data);
+        setMoves((prev)=>[...prev,{pos:moveData.pos,move:moveData.move}]);
+    }
+    else if(data.type==="win"){
+        alert("You Win!")
+        handleRematch();
+    }
+    else if(data.type==="lose"){
+        alert("You Lose!")
+        handleRematch();
+    }else if(data.type==="tie"){
+        alert("It's a Tie!")
+        handleRematch();
+    }
+    else if(data.type==="reset"){
+        setMoves([]);
+        setIsWaiting(false);
+        console.log("reset!");
+    }
+    else if(data.type==="close"){
+        console.log("close");
+        setIsWaiting(false);
+        if(sessionStorage.getItem("gameInfo")){
+            sessionStorage.removeItem("gameInfo");
+        }
+        setGameState("Waiting");
+    }
+}
+
+    
+
+    useEffect(()=>{
+        ws.addEventListener("message",updatePlayerMove);
+    },[]);
+
+    
+    return(
+        <div className={`grid grid-rows-3 grid-cols-3 ${currentDevice==="PC"?gameboardStyles["PC"]:gameboardStylesa["Mobile"]} gap-1`}>
+            {
+                positions.map((item,index)=>(
+                    <div className="flex border-2 border-[#037971] justify-center items-center cursor-pointer" key={item} onClick={()=>handlePlayerMove(item)}>
+                        {moves.map((currMove)=>(
+                            currMove.pos===item&&<p className="text-4xl text-[#00BFB3]">{currMove.move}</p>
+                        ))}
+                    </div>
+                ))
+            }
+        </div>
+    )
+}
+
+export default GameBoard;
