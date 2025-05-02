@@ -28,7 +28,7 @@ function App() {
       setGameId(gameData.game_id);
       setOppId(gameData.opponent.id);
       console.log("My Id:",gameData.You.id);
-      sessionStorage.setItem("gameInfo",JSON.stringify(gameData));
+      // sessionStorage.setItem("gameInfo",JSON.stringify(gameData));
       console.log("the saved game session is:",sessionStorage.getItem("gameInfo"));
       setMyId(gameData.You.id);
       setSymbol(gameData.You.Symbol);
@@ -40,7 +40,9 @@ function App() {
 
   function handleReconnect(e){
     let data=JSON.parse(e.data);
+    console.log("payload of data:",data.payload);
     let gameData=data.gameData;
+    console.log("handleReconnect executed!")
     if(data.type==="yesReconnect"){
       setName(gameData.You.name);
       setOppName(gameData.opponent.name);
@@ -48,7 +50,6 @@ function App() {
       setOppId(gameData.opponent.id);
       setMyId(gameData.You.id);
       setSymbol(gameData.You.Symbol);
-      setLoader(false);
       setGameState("Playing");
     }
 
@@ -79,7 +80,7 @@ function App() {
 
 //   useEffect(()=>{
 //     let gameInfo=JSON.parse(sessionStorage.getItem("gameInfo"));
-//     console.log("session token found:",gameInfo.You.name);
+//     let timeOutId;
 //     if(!gameInfo){return}
 //     const checkConnection=()=>{
 //       if(ws.current && ws.current.readyState===WebSocket.OPEN){
@@ -87,19 +88,27 @@ function App() {
 //         ws.current.send(JSON.stringify({type:"reconnect",payload:gameInfo}));
 //       }else{
 //         console.log("retrying in 5 seconds");
-//         setTimeout(checkConnection,5000);
+//         timeOutId=setTimeout(checkConnection,5000);
 //       }
 //     }
-//     ws.current.addEventListener("message",handleReconnect);
+
 //     checkConnection();
+//     console.log("Came out of If else!");
+//     console.log("ws.current is:",ws.current);
+//     if(ws.current){
+//       ws.current.addEventListener("message",handleReconnect);
+//     }
 //     return()=>{
-//       ws.current.removeEventListener("message",handleReconnect);
+//       // if(ws.current){
+//       //   ws.current.removeEventListener("message",handleReconnect);
+//       // }
+//       clearTimeout(timeOutId);
 //     }
 // },[]);
 
   useEffect(()=>{
     console.log("wsReady:",wsReady);
-  },[wsReady])
+  },[wsReady]);
 
 
 

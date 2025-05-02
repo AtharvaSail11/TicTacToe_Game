@@ -126,14 +126,17 @@ function handleMoves(data){
 }
 
 function handleReconnect(data){
-    let gameInfo=games.find((item)=>item.game_id === data.game_id);
+    let gameInfo=games.find((item)=>item.game_id === data.payload.game_id);
+    console.log("HandleReconnect function executed!");
+    console.log("gameInfo recieved while reconnection:",gameInfo);
     if(gameInfo){
         let You=Object.entries(gameInfo).find((item)=>{
             if(typeof(item[1])==='object'){
-                return item[1].id===gameInfo.You.id;
+                return item[1].id===data.payload.You.id;
             }
         });
-        You.playerSocket.send(JSON.stringify({type:"yesReconnect",payload:{gameMap:gameInfo.gameMap,currMove:gameInfo.currMove}}));
+        console.log("sending data to:",You[1].name);
+        You[1].playerSocket.send(JSON.stringify({type:"yesReconnect",payload:{gameMap:gameInfo.gameMap,currMove:gameInfo.currMove}}));
 }
 }
 
