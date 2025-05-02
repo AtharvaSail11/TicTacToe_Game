@@ -54,8 +54,8 @@ const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIs
     },[])
     return(
         <div className="flex flex-col h-full w-full">
-            <div className={`flex w-full justify-around ${currentDevice==="Mobile"?"text-base":"text-xl"} font-semibold text-[#037971]`}>
-            <div className={elementStyle.playerNameBox}><p>You</p><p>{name}</p></div>
+            <div className={`flex w-full justify-around ${currentDevice==="Mobile"?"text-base":"text-xl"} font-semibold text-[#00BFB3]`}>
+            <div className={elementStyle.playerNameBox}><p>You{` (${Symbol})`}</p><p>{name}</p></div>
             <div className=" flex justify-center w-[156px]"><p>{myTurn?"Your Turn":"Opponent's Turn"}</p></div>
             <div className={elementStyle.playerNameBox}><p>Opponent</p><p>{oppName}</p></div>
             
