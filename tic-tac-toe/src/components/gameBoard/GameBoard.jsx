@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState,currentDevice})=>{
-    const [moves,setMoves]=useState([]);
+const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState,currentDevice,moves,setMoves})=>{
     const positions=[1,2,3,4,5,6,7,8,9];
     console.log(positions);
     const gameboardStyles={
@@ -86,9 +85,13 @@ function updatePlayerMove(e){
         ws.addEventListener("message",updatePlayerMove);
     },[]);
 
+    useEffect(()=>{
+        console.log("moves played are:",moves);
+    },[moves]);
+
     
     return(
-        <div className={`grid grid-rows-3 grid-cols-3 ${currentDevice==="PC"?gameboardStyles["PC"]:gameboardStylesa["Mobile"]} gap-1`}>
+        <div className={`grid grid-rows-3 grid-cols-3 ${currentDevice==="PC"?gameboardStyles["PC"]:gameboardStyles["Mobile"]} gap-1`}>
             {
                 positions.map((item,index)=>(
                     <div className="flex border-2 border-[#037971] justify-center items-center cursor-pointer" key={item} onClick={()=>handlePlayerMove(item)}>
