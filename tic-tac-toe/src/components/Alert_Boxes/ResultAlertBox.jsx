@@ -1,9 +1,8 @@
 import React,{useState} from "react";
 
-const ResultAlertBox=({setResultAlertBox,result,setPlayAgain})=>{
+const ResultAlertBox=({result,handleRematch})=>{
     function handlePlayAgain(confirmation){
-        setPlayAgain(confirmation);
-        setResultAlertBox(false);
+        handleRematch(confirmation);
     }
     return(
         <div className='flex justify-center items-center absolute w-full h-full z-10'>

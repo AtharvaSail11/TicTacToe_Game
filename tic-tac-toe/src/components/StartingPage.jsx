@@ -18,7 +18,7 @@ let [name,setName]=useState("");
             <div className="flex justify-around items-center flex-col h-[400px] w-max p-5">
             <h1 className="text-[60px] text-[#00BFB3]">Tic-Tac-Toe</h1>
             <input type="text" className="bg-transparent text-[#00BFB3]  border-2 border-[#049A8F] p-2 rounded-lg" id="name" placeholder="Enter Name" onChange={handleChange}/>
-            {loader?(<p>Loading...</p>):""}
+            {loader?(<p className="text-[#00BFB3] font-semibold">Loading...</p>):""}
             <input className="w-1/2 border-2 border-[#03B5AA] rounded-2xl cursor-pointer p-2 bg-[#037971]" type="button" value="Start" onClick={registerPlayer}/>
             </div>
         </div>

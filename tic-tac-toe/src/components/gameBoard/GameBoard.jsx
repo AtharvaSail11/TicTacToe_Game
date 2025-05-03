@@ -6,8 +6,7 @@ const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,set
     const positions=[1,2,3,4,5,6,7,8,9];
     const [wrongMoveAlert,setWrongMoveAlert]=useState(false);
     const [resultAlertBox,setResultAlertBox]=useState(false);
-    const [result,setResult]=useState();
-    const [playAgain,setPlayAgain]=useState();
+    const [result,setResult]=useState(null);
     console.log(positions);
     const gameboardStyles={
         PC:"h-[400px] w-[400px]",
@@ -35,14 +34,13 @@ const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,set
     }
 
 function handleRematch(decision){;
-    setResult(decision);
-    setResultAlertBox(true);
-    if(playAgain){
+    if(decision){
         ws.send(JSON.stringify({type:"rematch",payload:{confirmation:true,gameId:gameId,senderId:myId,oppId:oppId}}));
         setIsWaiting(true);
     }else{
         ws.send(JSON.stringify({type:"rematch",payload:{confirmation:false,gameId:gameId,senderId:myId,oppId:oppId}}));
     }
+    setResultAlertBox(false);
 }
 
 function updatePlayerMove(e){
@@ -62,13 +60,16 @@ function updatePlayerMove(e){
         setMoves((prev)=>[...prev,{pos:moveData.pos,move:moveData.move}]);
     }
     else if(data.type==="win"){
-        handleRematch("win");
+        setResult("win");
+        setResultAlertBox(true);
     }
     else if(data.type==="lose"){
-        handleRematch("lose");
+        setResult("lose");
+        setResultAlertBox(true);
     }
     else if(data.type==="tie"){
-        handleRematch("tie");
+        setResult("tie");
+        setResultAlertBox(true);
     }
     else if(data.type==="reset"){
         setMoves([]);
@@ -108,7 +109,7 @@ function updatePlayerMove(e){
                 ))
             }
             {wrongMoveAlert?<WrongMoveAlert setWrongMoveAlert={setWrongMoveAlert}/>:""}
-            {resultAlertBox?<ResultAlertBox setResultAlertBox={setResultAlertBox} result={result} setPlayAgain={setPlayAgain}/>:""}
+            {resultAlertBox?<ResultAlertBox handleRematch={handleRematch} result={result}/>:""}
         </div>
     )
 }
