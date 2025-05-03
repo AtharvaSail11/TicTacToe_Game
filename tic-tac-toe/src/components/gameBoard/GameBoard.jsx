@@ -1,12 +1,19 @@
 import { useEffect, useRef, useState } from "react"
+import WrongMoveAlert from "../Alert_Boxes/wrongMoveAlert";
+import ResultAlertBox from "../Alert_Boxes/ResultAlertBox";
 
 const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState,currentDevice,moves,setMoves})=>{
     const positions=[1,2,3,4,5,6,7,8,9];
+    const [wrongMoveAlert,setWrongMoveAlert]=useState(false);
+    const [resultAlertBox,setResultAlertBox]=useState(false);
+    const [result,setResult]=useState();
+    const [playAgain,setPlayAgain]=useState();
     console.log(positions);
     const gameboardStyles={
         PC:"h-[400px] w-[400px]",
         Mobile:"h-[300px] w-[300px]"
     }
+
 
     useEffect(()=>{
         console.log("Current Device:",currentDevice);
@@ -27,8 +34,9 @@ const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,set
             }
     }
 
-function handleRematch(){;
-    let playAgain=confirm("Do you want to play again?");
+function handleRematch(decision){;
+    setResult(decision);
+    setResultAlertBox(true);
     if(playAgain){
         ws.send(JSON.stringify({type:"rematch",payload:{confirmation:true,gameId:gameId,senderId:myId,oppId:oppId}}));
         setIsWaiting(true);
@@ -41,7 +49,7 @@ function updatePlayerMove(e){
     let data=JSON.parse(e.data);
     if(data.type==="wait"){
         let wrongPos=data.pos;
-        alert("Wait for the opponent to play!");
+        setWrongMoveAlert(true);
         setMoves((prev)=>{
             let newArr=prev.filter((item)=>item.pos !== wrongPos);
             return newArr;
@@ -54,15 +62,13 @@ function updatePlayerMove(e){
         setMoves((prev)=>[...prev,{pos:moveData.pos,move:moveData.move}]);
     }
     else if(data.type==="win"){
-        alert("You Win!")
-        handleRematch();
+        handleRematch("win");
     }
     else if(data.type==="lose"){
-        alert("You Lose!")
-        handleRematch();
-    }else if(data.type==="tie"){
-        alert("It's a Tie!")
-        handleRematch();
+        handleRematch("lose");
+    }
+    else if(data.type==="tie"){
+        handleRematch("tie");
     }
     else if(data.type==="reset"){
         setMoves([]);
@@ -91,7 +97,7 @@ function updatePlayerMove(e){
 
     
     return(
-        <div className={`grid grid-rows-3 grid-cols-3 ${currentDevice==="PC"?gameboardStyles["PC"]:gameboardStyles["Mobile"]} gap-1`}>
+        <div className={`grid relative grid-rows-3 grid-cols-3 ${currentDevice==="PC"?gameboardStyles["PC"]:gameboardStyles["Mobile"]} gap-1`}>
             {
                 positions.map((item,index)=>(
                     <div className="flex border-2 border-[#037971] justify-center items-center cursor-pointer" key={item} onClick={()=>handlePlayerMove(item)}>
@@ -101,6 +107,8 @@ function updatePlayerMove(e){
                     </div>
                 ))
             }
+            {wrongMoveAlert?<WrongMoveAlert setWrongMoveAlert={setWrongMoveAlert}/>:""}
+            {resultAlertBox?<ResultAlertBox setResultAlertBox={setResultAlertBox} result={result} setPlayAgain={setPlayAgain}/>:""}
         </div>
     )
 }

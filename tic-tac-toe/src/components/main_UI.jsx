@@ -60,6 +60,7 @@ const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIs
             <div className={elementStyle.playerNameBox}><p>Opponent</p><p>{oppName}</p></div>
             
             </div>
+            
             <div className={`flex w-full justify-center ${currentDevice==="PC"?"mt-10":"mt-20"}`}>
             <GameBoard currentDevice={currentDevice} ws={ws} gameId={gameId} setGameState={setGameState} myId={myId} oppId={oppId} Symbol={Symbol} wsReady={wsReady} isWaiting={isWaiting} moves={moves} setMoves={setMoves} setIsWaiting={setIsWaiting}/>
             </div>
