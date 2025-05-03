@@ -2,13 +2,17 @@ import GameBoard from "./gameBoard/GameBoard";
 import { useState,useEffect } from "react";
 
 
-const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState})=>{
+const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState,restoredState})=>{
     const [currentDevice,setCurrentDevice]=useState("PC");
     const [myTurn,setMyTurn]=useState();
     const [moves,setMoves]=useState([]);
     const elementStyle={
         playerNameBox:`flex flex-col items-center ${currentDevice==="Mobile"?"w-[80px]":"w-[100px]"}`
     }
+
+    useEffect(()=>{
+        setMoves(restoredState);
+    },[restoredState])
 
     const handleResize=()=>{
         let maxWidth=window.innerWidth;

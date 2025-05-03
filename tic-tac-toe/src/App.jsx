@@ -15,6 +15,7 @@ function App() {
   const [myId,setMyId]=useState();
   const [Symbol,setSymbol]=useState();
   const [wsReady,setWsReady]=useState(false);
+  const [restoredState,setRestoredState]=useState([]);
   const ws=useRef(null);
   
 
@@ -53,6 +54,7 @@ function App() {
       setMyId(storedToken.You.id);
       setSymbol(storedToken.You.Symbol);
       console.log("the recieved game map:",gameData.gameMap);
+      setRestoredState([...gameData.gameMap]);
       setGameState("Playing");
     }
 
@@ -116,7 +118,7 @@ function App() {
   return (
     <div className='flex h-screen w-screen border-2 border-black bg-[#041216]'>
       {gameState==="Waiting"?<StartingPage ws={ws.current} setLoader={setLoader} loader={loader} gameState={gameState}/>:
-      <Main_UI ws={ws.current} myId={myId} name={name} gameId={gameId} setGameState={setGameState} isWaiting={isWaiting} setIsWaiting={setIsWaiting} oppName={oppName} oppId={oppId} Symbol={Symbol} wsReady={wsReady}/>}
+      <Main_UI ws={ws.current} myId={myId} name={name} gameId={gameId} setGameState={setGameState} isWaiting={isWaiting} setIsWaiting={setIsWaiting} oppName={oppName} oppId={oppId} Symbol={Symbol} restoredState={restoredState} wsReady={wsReady}/>}
     </div>
   )
 }
