@@ -125,18 +125,27 @@ function handleMoves(data){
         
 }
 
-function handleReconnect(data){
+function handleReconnect(data,socket){
+    console.log("The reconnection data recieved is:",data);
     let gameInfo=games.find((item)=>item.game_id === data.payload.game_id);
+    console.log("gameInfo is:",gameInfo);
     console.log("HandleReconnect function executed!");
-    console.log("gameInfo recieved while reconnection:",gameInfo);
     if(gameInfo){
+        let newGameMap=[];
+        gameInfo.gameMap.forEach((item,index)=>{
+            if(item !== ""){
+                newGameMap.push({pos:index+1,move:item})
+            }
+        });
+
+        console.log("newGameMap:",newGameMap);
+
         let You=Object.entries(gameInfo).find((item)=>{
             if(typeof(item[1])==='object'){
                 return item[1].id===data.payload.You.id;
             }
         });
-        console.log("sending data to:",You[1].name);
-        You[1].playerSocket.send(JSON.stringify({type:"yesReconnect",payload:{gameMap:gameInfo.gameMap,currMove:gameInfo.currMove}}));
+        socket.send(JSON.stringify({type:"yesReconnect",payload:{gameMap:newGameMap,currMove:gameInfo.currMove}}));
 }
 }
 
@@ -203,7 +212,8 @@ server.on('connection',(socket)=>{
         }else if(data.type === 'rematch'){
             handleRematch(data);
         }else if(data.type === 'reconnect'){
-            handleReconnect(data);
+            console.log("Reconnection request recieved!");
+            handleReconnect(data,socket);
         }
     })
 

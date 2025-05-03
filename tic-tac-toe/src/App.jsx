@@ -28,7 +28,7 @@ function App() {
       setGameId(gameData.game_id);
       setOppId(gameData.opponent.id);
       console.log("My Id:",gameData.You.id);
-      // sessionStorage.setItem("gameInfo",JSON.stringify(gameData));
+      sessionStorage.setItem("gameInfo",JSON.stringify(gameData));
       console.log("the saved game session is:",sessionStorage.getItem("gameInfo"));
       setMyId(gameData.You.id);
       setSymbol(gameData.You.Symbol);
@@ -40,27 +40,40 @@ function App() {
 
   function handleReconnect(e){
     let data=JSON.parse(e.data);
+    let storedToken=JSON.parse(sessionStorage.getItem("gameInfo"))
     console.log("payload of data:",data.payload);
-    let gameData=data.gameData;
+    let gameData=data.payload;
+    console.log("gameData.gameStateInfo:",gameData.gameMap);
     console.log("handleReconnect executed!")
     if(data.type==="yesReconnect"){
-      setName(gameData.You.name);
-      setOppName(gameData.opponent.name);
-      setGameId(gameData.game_id);
-      setOppId(gameData.opponent.id);
-      setMyId(gameData.You.id);
-      setSymbol(gameData.You.Symbol);
+      setName(storedToken.You.name);
+      setOppName(storedToken.opponent.name);
+      setGameId(storedToken.game_id);
+      setOppId(storedToken.opponent.id);
+      setMyId(storedToken.You.id);
+      setSymbol(storedToken.You.Symbol);
+      console.log("the recieved game map:",gameData.gameMap);
       setGameState("Playing");
     }
 
   }
 
+  const checkConnection=(gameInfo)=>{
+    console.log("sending reconnect...");
+    ws.current.send(JSON.stringify({type:"reconnect",payload:gameInfo}));
+}
+
 
   useEffect(()=>{
     ws.current=new WebSocket("ws://localhost:8080");
     ws.current.onopen=()=>{
+      let gameInfo=JSON.parse(sessionStorage.getItem("gameInfo"));
       console.log("Websocket connected!");
       setWsReady(true);
+      if(gameInfo){
+            checkConnection(gameInfo);
+            ws.current.addEventListener("message",handleReconnect);
+      }
     }
 
     ws.current.addEventListener("message",gameStart);
@@ -79,30 +92,18 @@ function App() {
 
 
 //   useEffect(()=>{
-//     let gameInfo=JSON.parse(sessionStorage.getItem("gameInfo"));
-//     let timeOutId;
-//     if(!gameInfo){return}
-//     const checkConnection=()=>{
-//       if(ws.current && ws.current.readyState===WebSocket.OPEN){
-//         console.log("sending reconnect...");
-//         ws.current.send(JSON.stringify({type:"reconnect",payload:gameInfo}));
-//       }else{
-//         console.log("retrying in 5 seconds");
-//         timeOutId=setTimeout(checkConnection,5000);
-//       }
-//     }
 
-//     checkConnection();
-//     console.log("Came out of If else!");
+
+//     // ws.current.onopen=()=>{
+//     //   
+//     // }
+
 //     console.log("ws.current is:",ws.current);
-//     if(ws.current){
-//       ws.current.addEventListener("message",handleReconnect);
-//     }
+    
 //     return()=>{
 //       // if(ws.current){
 //       //   ws.current.removeEventListener("message",handleReconnect);
 //       // }
-//       clearTimeout(timeOutId);
 //     }
 // },[]);
 

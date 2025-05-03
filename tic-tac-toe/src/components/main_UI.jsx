@@ -4,8 +4,8 @@ import { useState,useEffect } from "react";
 
 const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState})=>{
     const [currentDevice,setCurrentDevice]=useState("PC");
-    const [moves,setMoves]=useState([]);
     const [myTurn,setMyTurn]=useState();
+    const [moves,setMoves]=useState([]);
     const elementStyle={
         playerNameBox:`flex flex-col items-center ${currentDevice==="Mobile"?"w-[80px]":"w-[100px]"}`
     }
