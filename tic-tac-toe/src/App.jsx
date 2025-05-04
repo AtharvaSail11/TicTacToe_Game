@@ -30,7 +30,6 @@ function App() {
       setOppId(gameData.opponent.id);
       console.log("My Id:",gameData.You.id);
       sessionStorage.setItem("gameInfo",JSON.stringify(gameData));
-      console.log("the saved game session is:",sessionStorage.getItem("gameInfo"));
       setMyId(gameData.You.id);
       setSymbol(gameData.You.Symbol);
       console.log(gameData.opponent.id);
@@ -42,10 +41,7 @@ function App() {
   function handleReconnect(e){
     let data=JSON.parse(e.data);
     let storedToken=JSON.parse(sessionStorage.getItem("gameInfo"))
-    console.log("payload of data:",data.payload);
     let gameData=data.payload;
-    console.log("gameData.gameStateInfo:",gameData.gameMap);
-    console.log("handleReconnect executed!")
     if(data.type==="yesReconnect"){
       setName(storedToken.You.name);
       setOppName(storedToken.opponent.name);
@@ -53,7 +49,6 @@ function App() {
       setOppId(storedToken.opponent.id);
       setMyId(storedToken.You.id);
       setSymbol(storedToken.You.Symbol);
-      console.log("the recieved game map:",gameData.gameMap);
       setRestoredState([...gameData.gameMap]);
       setGameState("Playing");
     }

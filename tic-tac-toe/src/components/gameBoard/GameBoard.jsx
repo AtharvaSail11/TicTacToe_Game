@@ -28,7 +28,6 @@ const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,set
             console.log("Ready state 2:",wsReady);
 
             if(ws.readyState===WebSocket.OPEN){
-                console.log("move to send:",{type:"move",payload:{pos:position,move:Symbol,gameId:gameId,myId:myId,oppId:oppId}});
                 ws.send(JSON.stringify({type:"move",payload:{pos:position,move:Symbol,gameId:gameId,myId:myId,oppId:oppId}}));
             }
     }
