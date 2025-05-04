@@ -67,7 +67,7 @@ function App() {
 
 
   useEffect(()=>{
-    ws.current=new WebSocket("ws://localhost:8080");
+    ws.current=new WebSocket("https://tictactoegame-by-atharvasail.onrender.com");
     ws.current.onopen=()=>{
       let gameInfo=JSON.parse(sessionStorage.getItem("gameInfo"));
       console.log("Websocket connected!");
