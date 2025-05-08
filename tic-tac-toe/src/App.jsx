@@ -11,6 +11,7 @@ function App() {
   const [oppName,setOppName]=useState("");
   const [gameId,setGameId]=useState(null);
   const [isWaiting,setIsWaiting]=useState(false);
+  const [connecting,setConnecting]=useState(false);
   const [oppId,setOppId]=useState();
   const [myId,setMyId]=useState();
   const [Symbol,setSymbol]=useState();
@@ -112,7 +113,7 @@ function App() {
 
   return (
     <div className='flex h-screen w-screen border-2 border-black bg-[#041216]'>
-      {gameState==="Waiting"?<StartingPage ws={ws.current} setLoader={setLoader} loader={loader} gameState={gameState}/>:
+      {gameState==="Waiting"?<StartingPage ws={ws.current} setLoader={setLoader} loader={loader} gameState={gameState} connecting={connecting}/>:
       <Main_UI ws={ws.current} myId={myId} name={name} gameId={gameId} setGameState={setGameState} isWaiting={isWaiting} setIsWaiting={setIsWaiting} oppName={oppName} oppId={oppId} Symbol={Symbol} restoredState={restoredState} wsReady={wsReady}/>}
     </div>
   )
