@@ -39,6 +39,11 @@ function App() {
     }
   }
 
+  function connectToServer(){
+    console.log("Connecting to server executed!");
+    ws.current=new WebSocket("ws://localhost:8080");
+  }
+
   function handleReconnect(e){
     let data=JSON.parse(e.data);
     let storedToken=JSON.parse(sessionStorage.getItem("gameInfo"))
@@ -63,7 +68,18 @@ function App() {
 
 
   useEffect(()=>{
-    ws.current=new WebSocket("https://tictactoegame-by-atharvasail.onrender.com");
+    connectToServer();
+    setConnecting(true);
+    let timer=setInterval(()=>{
+      if(ws.current.readyState === WebSocket.OPEN){
+        console.log("Connected to the server!");
+        setConnecting(false);
+        clearInterval(timer)
+      }else{
+        connectToServer();
+      }
+    },2500);
+
     ws.current.onopen=()=>{
       let gameInfo=JSON.parse(sessionStorage.getItem("gameInfo"));
       console.log("Websocket connected!");
@@ -76,9 +92,9 @@ function App() {
 
     ws.current.addEventListener("message",gameStart);
 
-    ws.current.onerror=(error)=>{
-      console.log("Some error occured:",error);
-    }
+    // ws.current.onerror=(error)=>{
+    //   console.log("Some error occured:",error);
+    // }
     ws.current.onclose=()=>{
       console.log("WebSocket Closed!");
       setWsReady(false);

@@ -13,7 +13,7 @@ const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,set
         Mobile:"h-[300px] w-[300px]"
     }
 
-
+    
     useEffect(()=>{
         console.log("Current Device:",currentDevice);
     },[currentDevice])
