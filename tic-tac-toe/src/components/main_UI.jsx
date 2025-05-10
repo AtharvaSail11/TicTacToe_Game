@@ -2,8 +2,7 @@ import GameBoard from "./gameBoard/GameBoard";
 import { useState,useEffect } from "react";
 
 
-const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState,restoredState})=>{
-    const [currentDevice,setCurrentDevice]=useState("PC");
+const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState,restoredState,currentDevice})=>{
     const [myTurn,setMyTurn]=useState();
     const [moves,setMoves]=useState([]);
     const elementStyle={
@@ -14,19 +13,6 @@ const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIs
         setMoves(restoredState);
     },[restoredState])
 
-    const handleResize=()=>{
-        let maxWidth=window.innerWidth;
-        console.log("maxwidth:",maxWidth);
-        if(maxWidth <= 480){
-            setCurrentDevice("Mobile")
-        }
-        else if(maxWidth > 480 && maxWidth <= 760){
-            setCurrentDevice("Tablet");
-        }
-        else{
-            setCurrentDevice("PC");
-        }
-    }
 
     function handleTurn(){
         if(moves.length > 0){
@@ -51,10 +37,7 @@ const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIs
     
 
     useEffect(()=>{
-        window.addEventListener("resize",handleResize);
-        return ()=>{
-            window.removeEventListener("resize",handleResize);
-        }
+
     },[])
     return(
         <div className="flex flex-col h-full w-full">

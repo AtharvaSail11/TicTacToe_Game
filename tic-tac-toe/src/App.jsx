@@ -10,6 +10,7 @@ function App() {
   const [name,setName]=useState("");
   const [oppName,setOppName]=useState("");
   const [gameId,setGameId]=useState(null);
+  const [currentDevice,setCurrentDevice]=useState("PC");
   const [isWaiting,setIsWaiting]=useState(false);
   const [connecting,setConnecting]=useState(false);
   const [oppId,setOppId]=useState();
@@ -66,6 +67,20 @@ function App() {
     ws.current.send(JSON.stringify({type:"reconnect",payload:gameInfo}));
 }
 
+const handleResize=()=>{
+  let maxWidth=window.innerWidth;
+  console.log("maxwidth:",maxWidth);
+  if(maxWidth <= 480){
+      setCurrentDevice("Mobile")
+  }
+  else if(maxWidth > 480 && maxWidth <= 760){
+      setCurrentDevice("Tablet");
+  }
+  else{
+      setCurrentDevice("PC");
+  }
+}
+
 
   useEffect(()=>{
     connectToServer();
@@ -99,7 +114,11 @@ function App() {
       console.log("WebSocket Closed!");
       setWsReady(false);
     }
+
+    window.addEventListener("resize",handleResize);
+
     return ()=>{
+      window.removeEventListener("resize",handleResize);
       if(ws.current)ws.current.close();
     } 
   },[]);
@@ -129,8 +148,8 @@ function App() {
 
   return (
     <div className='flex h-screen w-screen border-2 border-black bg-[#041216]'>
-      {gameState==="Waiting"?<StartingPage ws={ws.current} setLoader={setLoader} loader={loader} gameState={gameState} connecting={connecting}/>:
-      <Main_UI ws={ws.current} myId={myId} name={name} gameId={gameId} setGameState={setGameState} isWaiting={isWaiting} setIsWaiting={setIsWaiting} oppName={oppName} oppId={oppId} Symbol={Symbol} restoredState={restoredState} wsReady={wsReady}/>}
+      {gameState==="Waiting"?<StartingPage ws={ws.current} setLoader={setLoader} loader={loader} gameState={gameState} connecting={connecting} currentDevice={currentDevice}/>:
+      <Main_UI ws={ws.current} myId={myId} name={name} gameId={gameId} setGameState={setGameState} isWaiting={isWaiting} setIsWaiting={setIsWaiting} oppName={oppName} oppId={oppId} Symbol={Symbol} restoredState={restoredState} wsReady={wsReady} currentDevice={currentDevice}/>}
     </div>
   )
 }
