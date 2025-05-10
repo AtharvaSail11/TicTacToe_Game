@@ -38,6 +38,7 @@ function handleRematch(decision){;
         setIsWaiting(true);
     }else{
         ws.send(JSON.stringify({type:"rematch",payload:{confirmation:false,gameId:gameId,senderId:myId,oppId:oppId}}));
+        setGameState("Waiting");
     }
     setResultAlertBox(false);
 }
