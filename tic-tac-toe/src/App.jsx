@@ -41,7 +41,7 @@ function App() {
 
   function connectToServer(){
     console.log("Connecting to server executed!");
-    ws.current=new WebSocket("ws://localhost:8080");
+    ws.current=new WebSocket("https://tictactoegame-by-atharvasail.onrender.com");
   }
 
   function handleReconnect(e){
