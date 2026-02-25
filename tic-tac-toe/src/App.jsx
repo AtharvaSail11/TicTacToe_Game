@@ -2,7 +2,6 @@ import { useState,useEffect, useRef } from 'react'
 import Main_UI from './components/main_UI'
 import './App.css'
 import StartingPage from './components/StartingPage'
-import js from '@eslint/js';
 
 function App() {
   const [gameState,setGameState]=useState("Waiting");
@@ -42,7 +41,7 @@ function App() {
 
   function connectToServer(){
     console.log("Connecting to server executed!");
-    ws.current=new WebSocket("https://tictactoegame-by-atharvasail.onrender.com");
+    ws.current=new WebSocket(`${import.meta.env.VITE_SERVER_DOMAIN2}`);
   }
 
   function handleReconnect(e){
