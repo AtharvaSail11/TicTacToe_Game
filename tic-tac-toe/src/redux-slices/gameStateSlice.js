@@ -22,7 +22,6 @@ const gameStateSlice = createSlice({
             state.oppName = action.payload.oppName;
             state.gameId = action.payload.gameId;
             state.isWaiting = action.payload.isWaiting;
-            state.connecting = action.payload.connecting;
             state.oppId = action.payload.oppId;
             state.myId = action.payload.myId;
             state.Symbol = action.payload.Symbol;
@@ -39,15 +38,18 @@ const gameStateSlice = createSlice({
             state.gameState=action.payload.gameState;
         },
         initWebSocket:(state,action)=>{
-            state.wsReady=action.payload.wsReady;
+            state.wsReady=action.payload;
         },
-        isPlayerWaiting:(state,action)=>{
-            state.isWaiting=action.payload.isWaiting
+        setWaitingStatus:(state,action)=>{
+            state.isWaiting=action.payload;
+        },
+        setGameState:(state,action)=>{
+            state.gameState=action.payload
         }
     }
 
 });
 
-export const {startGame,reconnect,initWebSocket}=gameStateSlice.actions
+export const {startGame,reconnect,initWebSocket,setWaitingStatus,setGameState}=gameStateSlice.actions
 
 export default gameStateSlice.reducer;

@@ -1,8 +1,7 @@
 import React,{ useEffect, useState } from "react";
 import ConnectingBox from "./Alert_Boxes/ConnectingBox";
 
-const StartingPage=({ws,loader,setLoader,connecting,currentDevice})=>{
-let [name,setName]=useState("");
+const StartingPage=({ws,name,setName,loader,setLoader,connecting,currentDevice})=>{
  const handleChange=(e)=>{
     let name=e.target.value;
     console.log("Name:",name)

@@ -3,25 +3,17 @@ import Main_UI from './components/main_UI'
 import './App.css'
 import StartingPage from './components/StartingPage'
 import { useSelector, useDispatch } from 'react-redux'
-import { startGame, reconnect, initWebSocket } from './redux-slices/gameStateSlice'
+import { startGame, reconnect, initWebSocket, setWaitingStatus } from './redux-slices/gameStateSlice'
 
 function App() {
-  const [gameState, setGameState] = useState("Waiting");
   const [loader, setLoader] = useState(false);
   const [name, setName] = useState("");
-  const [oppName, setOppName] = useState("");
-  const [gameId, setGameId] = useState(null);
-  const [isWaiting, setIsWaiting] = useState(false);
-  const [oppId, setOppId] = useState();
-  const [myId, setMyId] = useState();
-  const [Symbol, setSymbol] = useState();
-  const [wsReady, setWsReady] = useState(false);
   const [restoredState, setRestoredState] = useState([]);
   const ws = useRef(null);
-  const currentGameState = useSelector((state) => state.gameStateSlice);
+  const {wsReady,gameState,isWaiting} = useSelector((state) => state.gameStateSlice);
   const dispatch = useDispatch();
   const [connecting, setConnecting] = useState(false);
-    const [currentDevice, setCurrentDevice] = useState("PC");
+  const [currentDevice, setCurrentDevice] = useState("PC");
 
 
 
@@ -34,7 +26,7 @@ function App() {
         name: gameData.You.name,
         oppName: gameData.opponent.name,
         gameId: gameData.game_id,
-        connecting: action.payload.connecting,
+        connecting: false,
         oppId: gameData.opponent.id,
         myId: gameData.You.id,
         Symbol: gameData.You.Symbol,
@@ -44,6 +36,14 @@ function App() {
       sessionStorage.setItem("gameInfo", JSON.stringify(gameData));
     }
   }
+
+  useEffect(()=>{
+    dispatch(setWaitingStatus(true));
+  },[])
+
+  useEffect(()=>{
+         console.log('state:',isWaiting);
+  },[isWaiting])
 
   function connectToServer() {
     console.log("Connecting to server executed!");
@@ -62,7 +62,7 @@ function App() {
         oppId: storedToken.opponent.id,
         myId: storedToken.You.id,
         Symbol: storedToken.You.Symbol,
-        restoredState:[...gameData.gameMap],
+        restoredState: [...gameData.gameMap],
         gameState: "Playing",
       }
       dispatch(reconnect(stateData))
@@ -106,7 +106,7 @@ function App() {
     ws.current.onopen = () => {
       let gameInfo = JSON.parse(sessionStorage.getItem("gameInfo"));
       console.log("Websocket connected!");
-      dispatch(initWebSocket({wsReady:true}));
+      dispatch(initWebSocket(true));
       if (gameInfo) {
         checkConnection(gameInfo);
         ws.current.addEventListener("message", handleReconnect);
@@ -120,7 +120,7 @@ function App() {
     // }
     ws.current.onclose = () => {
       console.log("WebSocket Closed!");
-      initWebSocket({wsReady:false})
+      dispatch(initWebSocket(false))
     }
 
     window.addEventListener("resize", handleResize);
@@ -131,33 +131,16 @@ function App() {
     }
   }, []);
 
-
-  //   useEffect(()=>{
-
-
-  //     // ws.current.onopen=()=>{
-  //     //   
-  //     // }
-
-  //     console.log("ws.current is:",ws.current);
-
-  //     return()=>{
-  //       // if(ws.current){
-  //       //   ws.current.removeEventListener("message",handleReconnect);
-  //       // }
-  //     }
-  // },[]);
-
   useEffect(() => {
-    console.log("wsReady:", wsReady);
+    console.log("current state wsReady:", wsReady);
   }, [wsReady]);
 
 
 
   return (
     <div className='flex h-screen w-screen border-2 border-black bg-[#041216]'>
-      {gameState === "Waiting" ? <StartingPage ws={ws.current} setLoader={setLoader} loader={loader} gameState={gameState} connecting={connecting} currentDevice={currentDevice} /> :
-        <Main_UI ws={ws.current} myId={myId} name={name} gameId={gameId} setGameState={setGameState} isWaiting={isWaiting} setIsWaiting={setIsWaiting} oppName={oppName} oppId={oppId} Symbol={Symbol} restoredState={restoredState} wsReady={wsReady} currentDevice={currentDevice} />}
+      {gameState === "Waiting" ? <StartingPage ws={ws.current} name={name} setName={setName} setLoader={setLoader} loader={loader} gameState={gameState} connecting={connecting} currentDevice={currentDevice} /> :
+        <Main_UI ws={ws.current} restoredState={restoredState} wsReady={wsReady} currentDevice={currentDevice} />}
     </div>
   )
 }

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import WrongMoveAlert from "../Alert_Boxes/wrongMoveAlert";
 import ResultAlertBox from "../Alert_Boxes/ResultAlertBox";
+import { setWaitingStatus,setGameState } from "../../redux-slices/gameStateSlice";
+import { useSelector,useDispatch } from "react-redux";
 
-const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState,currentDevice,moves,setMoves})=>{
+const GameBoard=({ws,currentDevice,moves,setMoves})=>{
     const positions=[1,2,3,4,5,6,7,8,9];
     const [wrongMoveAlert,setWrongMoveAlert]=useState(false);
     const [resultAlertBox,setResultAlertBox]=useState(false);
@@ -12,6 +14,10 @@ const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,set
         PC:"h-[400px] w-[400px]",
         Mobile:"h-[300px] w-[300px]"
     }
+
+    const {gameId,myId,oppId,Symbol,wsReady,isWaiting,gameState}=useSelector((state)=>state.gameStateSlice)
+
+    const dispatch=useDispatch();
 
     
     useEffect(()=>{
@@ -35,10 +41,10 @@ const GameBoard=({ws,gameId,myId,oppId,Symbol,wsReady,isWaiting,setIsWaiting,set
 function handleRematch(decision){;
     if(decision){
         ws.send(JSON.stringify({type:"rematch",payload:{confirmation:true,gameId:gameId,senderId:myId,oppId:oppId}}));
-        setIsWaiting(true);
+        dispatch(setWaitingStatus(true));
     }else{
         ws.send(JSON.stringify({type:"rematch",payload:{confirmation:false,gameId:gameId,senderId:myId,oppId:oppId}}));
-        setGameState("Waiting");
+        dispatch(setGameState("Waiting"))
     }
     setResultAlertBox(false);
 }
@@ -73,12 +79,12 @@ function updatePlayerMove(e){
     }
     else if(data.type==="reset"){
         setMoves([]);
-        setIsWaiting(false);
+         dispatch(setWaitingStatus(false));
         console.log("reset!");
     }
     else if(data.type==="close"){
         console.log("close");
-        setIsWaiting(false);
+         dispatch(setWaitingStatus(false));
         if(sessionStorage.getItem("gameInfo")){
             sessionStorage.removeItem("gameInfo");
         }
