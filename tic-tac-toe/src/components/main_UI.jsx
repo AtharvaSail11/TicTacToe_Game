@@ -1,19 +1,17 @@
-import { useSelector,useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import GameBoard from "./gameBoard/GameBoard";
 import { useState,useEffect } from "react";
 
 
 
-const Main_UI=({ws,restoredState,currentDevice})=>{
+const Main_UI=({ws,currentDevice})=>{
     const [myTurn,setMyTurn]=useState();
     const [moves,setMoves]=useState([]);
     const elementStyle={
         playerNameBox:`flex flex-col items-center ${currentDevice==="Mobile"?"w-[80px]":"w-[100px]"}`
     }
 
-    const {name,oppName,Symbol,isWaiting}=useSelector((state)=>state.gameStateSlice)
-
-    const dispatch=useDispatch();
+    const {name,oppName,Symbol,isWaiting,restoredState}=useSelector((state)=>state.gameStateSlice)
 
     useEffect(()=>{
         setMoves(restoredState);

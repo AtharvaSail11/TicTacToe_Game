@@ -8,14 +8,11 @@ import { startGame, reconnect, initWebSocket, setWaitingStatus } from './redux-s
 function App() {
   const [loader, setLoader] = useState(false);
   const [name, setName] = useState("");
-  const [restoredState, setRestoredState] = useState([]);
   const ws = useRef(null);
   const {wsReady,gameState,isWaiting} = useSelector((state) => state.gameStateSlice);
   const dispatch = useDispatch();
   const [connecting, setConnecting] = useState(false);
   const [currentDevice, setCurrentDevice] = useState("PC");
-
-
 
   function gameStart(e) {
     let data = JSON.parse(e.data)
@@ -32,6 +29,7 @@ function App() {
         Symbol: gameData.You.Symbol,
         gameState: "Playing",
       }
+      setLoader(false);
       dispatch(startGame(stateData))
       sessionStorage.setItem("gameInfo", JSON.stringify(gameData));
     }
@@ -140,7 +138,7 @@ function App() {
   return (
     <div className='flex h-screen w-screen border-2 border-black bg-[#041216]'>
       {gameState === "Waiting" ? <StartingPage ws={ws.current} name={name} setName={setName} setLoader={setLoader} loader={loader} gameState={gameState} connecting={connecting} currentDevice={currentDevice} /> :
-        <Main_UI ws={ws.current} restoredState={restoredState} wsReady={wsReady} currentDevice={currentDevice} />}
+        <Main_UI ws={ws.current} wsReady={wsReady} currentDevice={currentDevice} />}
     </div>
   )
 }

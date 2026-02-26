@@ -8,13 +8,12 @@ const gameStateSlice = createSlice({
         oppName: '',
         gameId: null,
         isWaiting: false,
-        connecting: false,
         oppId: null,
         myId: null,
         Symbol: null,
         restoredState: [],
         wsReady: false,
-        gameState:'Waiting'
+        gameState:'Waiting',
     },
     reducers: {
         startGame: (state, action) => {

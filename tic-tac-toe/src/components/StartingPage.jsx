@@ -1,5 +1,6 @@
 import React,{ useEffect, useState } from "react";
 import ConnectingBox from "./Alert_Boxes/ConnectingBox";
+import { Loader2 } from "lucide-react";
 
 const StartingPage=({ws,name,setName,loader,setLoader,connecting,currentDevice})=>{
  const handleChange=(e)=>{
@@ -19,7 +20,7 @@ const StartingPage=({ws,name,setName,loader,setLoader,connecting,currentDevice})
             <input type="text" className="bg-transparent text-[#00BFB3]  border-2 border-[#049A8F] p-2 rounded-lg" id="name" placeholder="Enter Name" onChange={handleChange}/>
             {connecting?(<ConnectingBox currentDevice={currentDevice}/>):""}
             {loader?(<p className="text-[#00BFB3] font-semibold">Loading...</p>):""}
-            <input className="w-1/2 border-2 border-[#03B5AA] rounded-2xl cursor-pointer p-2 bg-[#037971]" type="button" value="Start" onClick={registerPlayer}/>
+            <button className={`flex items-center justify-center w-28 gap-2 border-2 rounded-2xl cursor-pointer p-2 ${loader?'bg-gray-500 border-gray-400':'bg-[#037971] border-[#03B5AA]'} `} onClick={registerPlayer} disabled={loader}>Start{loader?<Loader2 className="animate-spin text-gray-400" size={"20px"}/>:null}</button>
             </div>
         </div>
     )
