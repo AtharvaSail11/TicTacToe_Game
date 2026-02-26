@@ -1,13 +1,17 @@
+import { useSelector } from "react-redux";
 import GameBoard from "./gameBoard/GameBoard";
 import { useState,useEffect } from "react";
 
 
-const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIsWaiting,setGameState,restoredState,currentDevice})=>{
+
+const Main_UI=({ws,currentDevice})=>{
     const [myTurn,setMyTurn]=useState();
     const [moves,setMoves]=useState([]);
     const elementStyle={
         playerNameBox:`flex flex-col items-center ${currentDevice==="Mobile"?"w-[80px]":"w-[100px]"}`
     }
+
+    const {name,oppName,Symbol,isWaiting,restoredState}=useSelector((state)=>state.gameStateSlice)
 
     useEffect(()=>{
         setMoves(restoredState);
@@ -37,8 +41,8 @@ const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIs
     
 
     useEffect(()=>{
-
-    },[])
+        console.log('name:',name);
+    },[name])
     return(
         <div className="flex flex-col h-full w-full">
             <div className={`flex w-full justify-around ${currentDevice==="Mobile"?"text-base":"text-xl"} font-semibold text-[#00BFB3]`}>
@@ -49,7 +53,7 @@ const Main_UI=({ws,name,gameId,myId,oppName,oppId,Symbol,wsReady,isWaiting,setIs
             </div>
             
             <div className={`flex w-full justify-center ${currentDevice==="PC"?"mt-10":"mt-20"}`}>
-            <GameBoard currentDevice={currentDevice} ws={ws} gameId={gameId} setGameState={setGameState} myId={myId} oppId={oppId} Symbol={Symbol} wsReady={wsReady} isWaiting={isWaiting} moves={moves} setMoves={setMoves} setIsWaiting={setIsWaiting}/>
+            <GameBoard currentDevice={currentDevice} ws={ws} moves={moves} setMoves={setMoves}/>
             </div>
 
             {isWaiting?(<p>waiting...</p>):""}

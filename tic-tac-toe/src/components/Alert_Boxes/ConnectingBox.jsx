@@ -1,4 +1,5 @@
 import React from "react";
+import { Loader2 } from "lucide-react";
 
 const ConnectingBox=({currentDevice})=>{
   let isMobile=currentDevice === "Mobile";
@@ -13,7 +14,8 @@ const ConnectingBox=({currentDevice})=>{
             <div className={`flex flex-col justify-evenly items-center ${((isTab || isMobile) && 'h-[150px] w-[250px]') || (isPc && 'h-[150px] w-[300px]')} bg-[#023436] rounded-md`}>
               <div className="flex flex-col items-center">
                 <p className='text-[#03B5AA] font-semibold'>Connecting to the server</p>
-                <p className='text-[#03B5AA] font-semibold'>Please Wait...</p>
+                <p className='text-[#03B5AA] font-semibold'>Please Wait</p>
+                <Loader2 className="animate-spin text-[#03B5AA]" size={"30px"}/>
               </div>    
             </div>
     </div>
