@@ -94,13 +94,11 @@ function createRoom(data, socketId) {
         socketStore.get(currentGame.player2.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: currentGame.game_id, You: currentGame.player2, opponent: currentGame.player1 } }));
     }
 
-    // console.log("The player connected is:", players);
-    // console.log("The games are:", games);
 }
 
 function handleMoves(data) {
     console.log("Move:", data.payload.move);
-    // let game = games.find((item) => item.game_id === data.payload.gameId);
+
     let game = games.get(data.payload.gameId)
     if (game.currMove !== data.payload.move) {
         let me = Object.entries(game).find((item) => {
@@ -146,9 +144,6 @@ function handleReconnect(data, socketId) {
 
         console.log("newGameMap:", newGameMap);
 
-        // let You=Object.entries(gameInfo).find(([_,val])=>{
-        //     return typeof(val)==='object' && val.id===data.payload.You.id;
-        // });
 
         let You = Object.entries(gameInfo).find((item) => {
             return typeof (item[1]) === 'object' && item[1].id === data.payload.You.id;
@@ -172,14 +167,13 @@ function handleRematch(data) {
     }
     if (game) {
         console.log("Yes,senderId:", data.payload.senderId);
-        // let index = rematch.findIndex((item) => item.gameId === data.payload.gameId);
-        // rematch[index].confirmations.push(data.payload.confirmation);
+
         let currentRematchIndex=rematch.get(data.payload.gameId)
         currentRematchIndex.confirmations.push(data.payload.confirmation)
         console.log("rematch:", rematch);
         if (currentRematchIndex.confirmations.length === 2) {
             if (currentRematchIndex.confirmations[0] && currentRematchIndex.confirmations[1]) {
-                // let gameIndex = games.findIndex((item) => item.game_id === data.payload.gameId);
+  
                 game.gameMap = ["", "", "", "", "", "", "", "", ""];
                 game.currMove = "X";
                 socketStore.get(game.player1.socketId).send(JSON.stringify({ type: "reset" }));
@@ -187,7 +181,7 @@ function handleRematch(data) {
                 currentRematchIndex.confirmations = [];
             } else {
                 console.log("second condition executed");
-                let gameIndex = games.findIndex((item) => item.game_id === data.payload.gameId);
+
                 console.log("game:", game)
                 let p1 = Object.entries(game).find((item) => {
                     if (typeof (item[1]) === 'object') {
@@ -221,9 +215,7 @@ server.on('connection', (socket) => {
     console.log("A player has joined the room!");
     socket.on('message', (jsonData) => {
         let data = JSON.parse(jsonData);
-        //We generate a random id for our current socket.
         const currentSocketId = uid.rnd();
-        //We store the socket with the following socketId in a hashmap.
         socketStore.set(currentSocketId, socket);
         console.log("The data recieved is:", data);
         if (data.type === 'register') {
