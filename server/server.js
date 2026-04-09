@@ -7,8 +7,8 @@ const uid = new uniqueid({ length: 10 })
 app.use(express.json());
 app.use(cors());
 const server = new ws.Server({ port: 8080 });
-let games = [];
-let rematch = [];
+let games = new Map();
+let rematch = new Map();
 let players = [];
 let socketStore = new Map();
 
@@ -86,10 +86,12 @@ function createRoom(data, socketId) {
 
 
     if (players.length === 2) {
-        games.push({ game_id: uid.rnd(), player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" });
+        const gameId=uid.rnd()
+        games.set(gameId,{ game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" });
         players = [];
-        socketStore.get(games[games.length - 1].player1.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: games[games.length - 1].game_id, You: games[games.length - 1].player1, opponent: games[games.length - 1].player2 } }));
-        socketStore.get(games[games.length - 1].player2.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: games[games.length - 1].game_id, You: games[games.length - 1].player2, opponent: games[games.length - 1].player1 } }));
+        const currentGame=games.get(gameId);
+        socketStore.get(currentGame.player1.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: currentGame.game_id, You: currentGame.player1, opponent: currentGame.player2 } }));
+        socketStore.get(currentGame.player2.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: currentGame.game_id, You: currentGame.player2, opponent: currentGame.player1 } }));
     }
 
     // console.log("The player connected is:", players);
@@ -98,7 +100,8 @@ function createRoom(data, socketId) {
 
 function handleMoves(data) {
     console.log("Move:", data.payload.move);
-    let game = games.find((item) => item.game_id === data.payload.gameId);
+    // let game = games.find((item) => item.game_id === data.payload.gameId);
+    let game = games.get(data.payload.gameId)
     if (game.currMove !== data.payload.move) {
         let me = Object.entries(game).find((item) => {
             if (typeof (item[1]) === 'object') {
@@ -130,7 +133,7 @@ function handleMoves(data) {
 
 function handleReconnect(data, socketId) {
     console.log("The reconnection data recieved is:", data);
-    let gameInfo = games.find((item) => item.game_id === data.payload.game_id);
+    let gameInfo = games.get(data.payload.game_id);
     console.log("gameInfo is:", gameInfo);
     console.log("HandleReconnect function executed!");
     if (gameInfo) {
@@ -163,34 +166,36 @@ function handleReconnect(data, socketId) {
 }
 
 function handleRematch(data) {
-    let game = games.find((item) => item.game_id === data.payload.gameId);
-    if (!rematch.find((item) => item.gameId === data.payload.gameId)) {
-        rematch.push({ gameId: data.payload.gameId, confirmations: [] });
+    let game =games.get(data.payload.gameId);
+    if (!rematch.has(data.payload.gameId)) {
+        rematch.set(data.payload.gameId,{ gameId: data.payload.gameId, confirmations: [] });
     }
     if (game) {
         console.log("Yes,senderId:", data.payload.senderId);
-        let index = rematch.findIndex((item) => item.gameId === data.payload.gameId);
-        rematch[index].confirmations.push(data.payload.confirmation);
+        // let index = rematch.findIndex((item) => item.gameId === data.payload.gameId);
+        // rematch[index].confirmations.push(data.payload.confirmation);
+        let currentRematchIndex=rematch.get(data.payload.gameId)
+        currentRematchIndex.confirmations.push(data.payload.confirmation)
         console.log("rematch:", rematch);
-        if (rematch[index].confirmations.length === 2) {
-            if (rematch[index].confirmations[0] && rematch[index].confirmations[1]) {
-                let gameIndex = games.findIndex((item) => item.game_id === data.payload.gameId);
-                games[gameIndex].gameMap = ["", "", "", "", "", "", "", "", ""];
-                games[gameIndex].currMove = "X";
-                socketStore.get(games[gameIndex].player1.socketId).send(JSON.stringify({ type: "reset" }));
-                socketStore.get(games[gameIndex].player2.socketId).send(JSON.stringify({ type: "reset" }));
-                rematch[index].confirmations = [];
+        if (currentRematchIndex.confirmations.length === 2) {
+            if (currentRematchIndex.confirmations[0] && currentRematchIndex.confirmations[1]) {
+                // let gameIndex = games.findIndex((item) => item.game_id === data.payload.gameId);
+                game.gameMap = ["", "", "", "", "", "", "", "", ""];
+                game.currMove = "X";
+                socketStore.get(game.player1.socketId).send(JSON.stringify({ type: "reset" }));
+                socketStore.get(game.player2.socketId).send(JSON.stringify({ type: "reset" }));
+                currentRematchIndex.confirmations = [];
             } else {
                 console.log("second condition executed");
                 let gameIndex = games.findIndex((item) => item.game_id === data.payload.gameId);
-                console.log("games[gameIndex]:", games[gameIndex])
-                let p1 = Object.entries(games[gameIndex]).find((item) => {
+                console.log("game:", game)
+                let p1 = Object.entries(game).find((item) => {
                     if (typeof (item[1]) === 'object') {
                         return item[1].id === data.payload.senderId;
                     }
                 });
 
-                let p2 = Object.entries(games[gameIndex]).find((item) => {
+                let p2 = Object.entries(game).find((item) => {
                     if (typeof (item[1]) === 'object') {
                         return item[1].id === data.payload.oppId;
                     }
@@ -205,8 +210,7 @@ function handleRematch(data) {
                     socketStore.get(p2[1].socketId).send(JSON.stringify({ type: "close", message: "connection closed!" }));
                 }
 
-                let new_games = games.filter((item) => item.game_id !== data.payload.gameId);
-                games = new_games;
+                games.delete(data.payload.gameId)
             }
         }
     }
