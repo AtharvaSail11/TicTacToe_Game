@@ -86,10 +86,10 @@ function createRoom(data, socketId) {
 
 
     if (players.length === 2) {
-        const gameId=uid.rnd()
-        games.set(gameId,{ game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" });
+        const gameId = uid.rnd()
+        games.set(gameId, { game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" });
         players = [];
-        const currentGame=games.get(gameId);
+        const currentGame = games.get(gameId);
         socketStore.get(currentGame.player1.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: currentGame.game_id, You: currentGame.player1, opponent: currentGame.player2 } }));
         socketStore.get(currentGame.player2.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: currentGame.game_id, You: currentGame.player2, opponent: currentGame.player1 } }));
     }
@@ -106,7 +106,7 @@ function handleMoves(data) {
                 return item[1].id === data.payload.myId;
             }
         });
- 
+
         socketStore.get(me[1].socketId).send(JSON.stringify({ type: "wait", pos: data.payload.pos }));
 
     } else {
@@ -161,19 +161,18 @@ function handleReconnect(data, socketId) {
 }
 
 function handleRematch(data) {
-    let game =games.get(data.payload.gameId);
+    let game = games.get(data.payload.gameId);
     if (!rematch.has(data.payload.gameId)) {
-        rematch.set(data.payload.gameId,{ gameId: data.payload.gameId, confirmations: [] });
+        rematch.set(data.payload.gameId, { gameId: data.payload.gameId, confirmations: [] });
     }
     if (game) {
         console.log("Yes,senderId:", data.payload.senderId);
 
-        let currentRematchIndex=rematch.get(data.payload.gameId)
+        let currentRematchIndex = rematch.get(data.payload.gameId)
         currentRematchIndex.confirmations.push(data.payload.confirmation)
-        console.log("rematch:", rematch);
         if (currentRematchIndex.confirmations.length === 2) {
             if (currentRematchIndex.confirmations[0] && currentRematchIndex.confirmations[1]) {
-  
+
                 game.gameMap = ["", "", "", "", "", "", "", "", ""];
                 game.currMove = "X";
                 socketStore.get(game.player1.socketId).send(JSON.stringify({ type: "reset" }));
@@ -182,7 +181,6 @@ function handleRematch(data) {
             } else {
                 console.log("second condition executed");
 
-                console.log("game:", game)
                 let p1 = Object.entries(game).find((item) => {
                     if (typeof (item[1]) === 'object') {
                         return item[1].id === data.payload.senderId;
@@ -195,7 +193,7 @@ function handleRematch(data) {
                     }
                 });
 
-                console.log("p1=>player1:", p1);
+                // console.log("p1=>player1:", p1);
 
                 if (p1[1].socketId) {
                     socketStore.get(p1[1].socketId).send(JSON.stringify({ type: "close", message: "connection closed!" }));
@@ -212,11 +210,11 @@ function handleRematch(data) {
 }
 
 server.on('connection', (socket) => {
-    console.log("A player has joined the room!");
+    const currentSocketId = uid.rnd();
+    console.log(`client ${currentSocketId} joined the room!`);
+    socketStore.set(currentSocketId, socket);
     socket.on('message', (jsonData) => {
         let data = JSON.parse(jsonData);
-        const currentSocketId = uid.rnd();
-        socketStore.set(currentSocketId, socket);
         console.log("The data recieved is:", data);
         if (data.type === 'register') {
             createRoom(data, currentSocketId);
@@ -233,7 +231,8 @@ server.on('connection', (socket) => {
     socket.on('close', () => {
         console.log("Players:", players);
         console.log("games array:", games);
-        console.log("client disconnected!");
+        socketStore.delete(currentSocketId);
+        console.log(`client ${currentSocketId} disconnected!`);
     })
 });
 
