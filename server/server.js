@@ -4,6 +4,7 @@ const ws = require('ws');
 const cors = require('cors');
 const uniqueid = require('short-unique-id');
 const uid = new uniqueid({ length: 10 })
+const redis=require('redis');
 app.use(express.json());
 app.use(cors());
 const server = new ws.Server({ port: 8080 });
@@ -11,6 +12,17 @@ let games = new Map();
 let rematch = new Map();
 let players = [];
 let socketStore = new Map();
+const redisClient=redis.createClient();
+redisClient.on('error',(error)=>console.log('error occured while connecting to redis:',error));
+
+async function connectToRedis(params) {
+    await redisClient.connect()
+    console.log('Connected to redis!');
+}
+
+connectToRedis();
+
+
 
 
 function win(game) {
@@ -77,7 +89,7 @@ function win(game) {
     }
 }
 
-function createRoom(data, socketId) {
+async function createRoom(data, socketId) {
     if (players.length % 2 === 0) {
         players.push({ socketId: socketId, id: uid.rnd(), name: data.payload, Symbol: 'X' });
     } else {
@@ -87,19 +99,22 @@ function createRoom(data, socketId) {
 
     if (players.length === 2) {
         const gameId = uid.rnd()
-        games.set(gameId, { game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" });
+        // games.set(gameId, { game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" });
+        await redisClient.hSet('games',gameId,JSON.stringify({ game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" }))
         players = [];
-        const currentGame = games.get(gameId);
+        // const currentGame = games.get(gameId);
+        const currentGame=JSON.parse(await redisClient.hGet('games',gameId))
         socketStore.get(currentGame.player1.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: currentGame.game_id, You: currentGame.player1, opponent: currentGame.player2 } }));
         socketStore.get(currentGame.player2.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: currentGame.game_id, You: currentGame.player2, opponent: currentGame.player1 } }));
     }
 
 }
 
-function handleMoves(data) {
+async function handleMoves(data) {
     console.log("Move:", data.payload.move);
 
-    let game = games.get(data.payload.gameId)
+    // let game = games.get(data.payload.gameId)
+    let game=JSON.parse(await redisClient.hGet('games',data.payload.gameId));
     if (game.currMove !== data.payload.move) {
         let me = Object.entries(game).find((item) => {
             if (typeof (item[1]) === 'object') {
@@ -125,14 +140,15 @@ function handleMoves(data) {
         } else {
             game.currMove = "X";
         }
+        await redisClient.hSet('games',data.payload.gameId,JSON.stringify(game))
     }
 
 }
 
-function handleReconnect(data, socketId) {
+async function handleReconnect(data, socketId) {
     console.log("The reconnection data recieved is:", data);
-    let gameInfo = games.get(data.payload.game_id);
-    console.log("gameInfo is:", gameInfo);
+    // let gameInfo = games.get(data.payload.game_id);
+    let gameInfo=JSON.parse(await redisClient.hGet('games',data.payload.game_id));
     console.log("HandleReconnect function executed!");
     if (gameInfo) {
         let newGameMap = [];
@@ -141,8 +157,6 @@ function handleReconnect(data, socketId) {
                 newGameMap.push({ pos: index + 1, move: item })
             }
         });
-
-        console.log("newGameMap:", newGameMap);
 
 
         let You = Object.entries(gameInfo).find((item) => {
@@ -153,15 +167,14 @@ function handleReconnect(data, socketId) {
             const [key, obj] = You;
             obj.socketId = socketId;
         }
-        console.log("The You is:", You);
         You.socketId = socketId;
 
         socketStore.get(socketId).send(JSON.stringify({ type: "yesReconnect", payload: { gameMap: newGameMap, currMove: gameInfo.currMove, updatedSocket: socketId } }));
     }
 }
 
-function handleRematch(data) {
-    let game = games.get(data.payload.gameId);
+async function handleRematch(data) {
+    let game = JSON.parse(await redisClient.hGet('games',data.payload.gameId));
     if (!rematch.has(data.payload.gameId)) {
         rematch.set(data.payload.gameId, { gameId: data.payload.gameId, confirmations: [] });
     }
@@ -202,7 +215,7 @@ function handleRematch(data) {
                     socketStore.get(p2[1].socketId).send(JSON.stringify({ type: "close", message: "connection closed!" }));
                 }
 
-                games.delete(data.payload.gameId)
+                await redisClient.del('games',data.payload.gameId);
             }
         }
     }
