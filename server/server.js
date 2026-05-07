@@ -12,6 +12,7 @@ let games = new Map();
 let rematch = new Map();
 let players = [];
 let socketStore = new Map();
+let chatData= new Map();
 const redisClient=redis.createClient();
 redisClient.on('error',(error)=>console.log('error occured while connecting to redis:',error));
 
@@ -145,6 +146,24 @@ async function handleMoves(data) {
 
 }
 
+async function handleChat(data){
+    const message=data.payload;
+    let game=JSON.parse(await redisClient.hGet('games',message.gameId));
+    let prevChats=chatData.get(message.gameId);
+    prevChats.push(message.messageText);
+
+    
+    let oppData = Object.entries(game).find((item) => {
+            return typeof (item[1]) === 'object' && item[1].id === message.oppId;
+    });
+
+    const oppSocket=socketStore.get(oppData.socketId);
+
+    oppSocket.send(JSON.stringify({type:'updateChat',payload:{messageText:message.messageText}}));
+
+    chatData.set(prevChats);
+}
+
 async function handleReconnect(data, socketId) {
     console.log("The reconnection data recieved is:", data);
     // let gameInfo = games.get(data.payload.game_id);
@@ -235,6 +254,8 @@ server.on('connection', (socket) => {
             handleMoves(data);
         } else if (data.type === 'rematch') {
             handleRematch(data);
+        } else if(data.type === 'sendMessage'){
+            handleChat(data);
         } else if (data.type === 'reconnect') {
             console.log("Reconnection request recieved!");
             handleReconnect(data, currentSocketId);

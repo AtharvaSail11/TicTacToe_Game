@@ -1,16 +1,34 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
+import { useSelector,useDispatch } from "react-redux";
+
+
 const InGameChat = ({ws}) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState('');
-    const myId = 'abc123'
 
-    const sendMessage = (e) => {
-        const data = { socketId: 'cde345', name: 'abc', createdAt: new Date().toISOString(), messageText: text };
-        setMessages((prev) => [...prev, data]);
+
+    const {gameId,myId,oppId,name,oppName,Symbol,wsReady,isWaiting,gameState}=useSelector((state)=>state.gameStateSlice);
+
+    const dispatch=useDispatch();
+
+    const handleChat = (e) => {
+        const data=JSON.parse(e.data);
+
+        if(data.type === 'updateChat'){
+            setMessages((prev)=>[...prev,data.messageData]);
+        }else if(data.type === 'recoverChats'){
+            setMessages([...data.chatData]);
+        }
+    }
+
+    const sendMessage=()=>{
+        const messageData = {gameId,myId,oppId,name,messageText:text};
+        ws.current.send(JSON.stringify({type:'sendMessage',payload:messageData}));
+        setMessages((prev) => [...prev, text]);
     }
 
     useEffect(()=>{
-        ws.addEventListener("message",sendMessage)
+        ws.addEventListener("message",handleChat);
     },[])
     return (
         <div className="flex flex-col h-max w-max border-2 border-teal-600 p-4 text-teal-600">
