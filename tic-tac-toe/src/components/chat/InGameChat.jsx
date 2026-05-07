@@ -9,22 +9,23 @@ const InGameChat = ({ws}) => {
 
     const {gameId,myId,oppId,name,oppName,Symbol,wsReady,isWaiting,gameState}=useSelector((state)=>state.gameStateSlice);
 
-    const dispatch=useDispatch();
-
     const handleChat = (e) => {
         const data=JSON.parse(e.data);
 
+
         if(data.type === 'updateChat'){
-            setMessages((prev)=>[...prev,data.messageData]);
+            setMessages((prev)=>[...prev,data.payload]);
         }else if(data.type === 'recoverChats'){
-            setMessages([...data.chatData]);
+            setMessages([...data.payload]);
         }
     }
 
     const sendMessage=()=>{
         const messageData = {gameId,myId,oppId,name,messageText:text};
-        ws.current.send(JSON.stringify({type:'sendMessage',payload:messageData}));
-        setMessages((prev) => [...prev, text]);
+        const currentMessage={name:name,messageText:text,id:myId};
+        console.log('currentMessage:',currentMessage);
+        ws.send(JSON.stringify({type:'sendMessage',payload:messageData}));
+        setMessages((prev) => [...prev, currentMessage]);
     }
 
     useEffect(()=>{
@@ -37,7 +38,7 @@ const InGameChat = ({ws}) => {
             <div className="flex flex-col h-52 overflow-y-auto">
                 {messages.map((message, index) => (
                     <div className="flex flex-col">
-                        <p className={`${message.socketId===myId ? 'text-green-500':'text-red-500'}`}>{message.name}</p>
+                        <p className={`${message.id===myId ? 'text-green-500':'text-red-500'}`}>{message.name}</p>
                         <p>{message.messageText}</p>
                     </div>
                 ))}

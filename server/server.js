@@ -102,6 +102,7 @@ async function createRoom(data, socketId) {
         const gameId = uid.rnd()
         // games.set(gameId, { game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" });
         await redisClient.hSet('games',gameId,JSON.stringify({ game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" }))
+        chatData.set(gameId,[]);
         players = [];
         // const currentGame = games.get(gameId);
         const currentGame=JSON.parse(await redisClient.hGet('games',gameId))
@@ -147,19 +148,29 @@ async function handleMoves(data) {
 }
 
 async function handleChat(data){
-    const message=data.payload;
-    let game=JSON.parse(await redisClient.hGet('games',message.gameId));
-    let prevChats=chatData.get(message.gameId);
-    prevChats.push(message.messageText);
+    const messageObj=data;
+    const messageData=messageObj.payload;
+
+    const chatMessageObj={name:messageData.name,messageText:messageData.messageText,id:messageData.myId}
+
+    console.log('data.payload:',messageData);
+    let game=JSON.parse(await redisClient.hGet('games',messageData.gameId));
+    let prevChats=chatData.get(messageData.gameId);
+    prevChats.push(chatMessageObj);
 
     
     let oppData = Object.entries(game).find((item) => {
-            return typeof (item[1]) === 'object' && item[1].id === message.oppId;
+            return typeof (item[1]) === 'object' && item[1].id === messageData.oppId;
     });
 
-    const oppSocket=socketStore.get(oppData.socketId);
+    console.log('oppData:',oppData);
+    console.log('oppData.socketId:',oppData[1].socketId);
 
-    oppSocket.send(JSON.stringify({type:'updateChat',payload:{messageText:message.messageText}}));
+    const oppSocket=socketStore.get(oppData[1].socketId);
+
+    console.log('oppSocket:',oppSocket)
+
+    oppSocket.send(JSON.stringify({type:'updateChat',payload:chatMessageObj}));
 
     chatData.set(prevChats);
 }
