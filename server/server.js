@@ -1,12 +1,12 @@
-const express = require('express');
-const app = express();
+// const express = require('express');
+// const app = express();
 const ws = require('ws');
 const cors = require('cors');
 const uniqueid = require('short-unique-id');
 const uid = new uniqueid({ length: 10 })
 const redis=require('redis');
-app.use(express.json());
-app.use(cors());
+// app.use(express.json());
+// app.use(cors());
 const server = new ws.Server({ port: 8080 });
 let games = new Map();
 let rematch = new Map();

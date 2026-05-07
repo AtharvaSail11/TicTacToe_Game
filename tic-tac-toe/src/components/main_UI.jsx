@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import GameBoard from "./gameBoard/GameBoard";
 import { useState,useEffect } from "react";
+import InGameChat from "./chat/InGameChat";
 
 
 
@@ -55,6 +56,8 @@ const Main_UI=({ws,currentDevice})=>{
             <div className={`flex w-full justify-center ${currentDevice==="PC"?"mt-10":"mt-20"}`}>
             <GameBoard currentDevice={currentDevice} ws={ws} moves={moves} setMoves={setMoves}/>
             </div>
+
+            <InGameChat ws={ws}/>
 
             {isWaiting?(<p>waiting...</p>):""}
             
