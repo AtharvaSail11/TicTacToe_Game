@@ -45,7 +45,7 @@ const Main_UI=({ws,currentDevice})=>{
         console.log('name:',name);
     },[name])
     return(
-        <div className="flex flex-col h-full w-full">
+        <div className="flex flex-col h-full gap-5 lg:gap-0 w-full">
             <div className={`flex w-full justify-around ${currentDevice==="Mobile"?"text-base":"text-xl"} font-semibold text-[#00BFB3]`}>
             <div className={elementStyle.playerNameBox}><p>You{` (${Symbol})`}</p><p>{name}</p></div>
             <div className=" flex justify-center w-[156px]"><p>{myTurn?"Your Turn":"Opponent's Turn"}</p></div>
@@ -57,7 +57,9 @@ const Main_UI=({ws,currentDevice})=>{
             <GameBoard currentDevice={currentDevice} ws={ws} moves={moves} setMoves={setMoves}/>
             </div>
 
-            <InGameChat ws={ws}/>
+            <div className="flex w-full justify-center lg:justify-start">
+                <InGameChat ws={ws}/>
+            </div>
 
             {isWaiting?(<p>waiting...</p>):""}
             

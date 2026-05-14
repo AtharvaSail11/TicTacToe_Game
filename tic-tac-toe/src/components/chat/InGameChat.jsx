@@ -45,8 +45,8 @@ const InGameChat = ({ws}) => {
             </div>
 
             {/*Input box */}
-            <div className="flex">
-                <input type="text" name="message" id="message" className="bg-transparent" onChange={(e) => setText(e.target.value)} />
+            <div className="flex gap-5">
+                <input type="text" name="message" id="message" className="bg-transparent border border-teal-200/20" onChange={(e) => setText(e.target.value)} />
                 <button className="bg-teal-600 px-4 py-2 text-black rounded-lg" onClick={sendMessage}>Send</button>
             </div>
         </div>
