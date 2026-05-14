@@ -31,7 +31,7 @@ function App() {
       }
       setLoader(false);
       dispatch(startGame(stateData))
-      sessionStorage.setItem("gameInfo", JSON.stringify(gameData));
+      sessionStorage.setItem("gameInfo", JSON.stringify({game_id:gameData.game_id,playerId:gameData.You.id}));
     }
   }
 
@@ -50,19 +50,23 @@ function App() {
 
   function handleReconnect(e) {
     let data = JSON.parse(e.data);
-    let storedToken = JSON.parse(sessionStorage.getItem("gameInfo"))
+    // let storedToken = JSON.parse(sessionStorage.getItem("gameInfo"))
     let gameData = data.payload;
+    console.log('gameData while reconnecting is:',gameData);
     if (data.type === "yesReconnect") {
       const stateData = {
-        name: storedToken.You.name,
-        oppName: storedToken.opponent.name,
-        gameId: storedToken.game_id,
-        oppId: storedToken.opponent.id,
-        myId: storedToken.You.id,
-        Symbol: storedToken.You.Symbol,
+        name: gameData.You.name,
+        oppName: gameData.Opp.name,
+        gameId: gameData.game_id,
+        oppId: gameData.Opp.id,
+        myId: gameData.You.id,
+        Symbol: gameData.You.Symbol,
         restoredState: [...gameData.gameMap],
         gameState: "Playing",
       }
+
+      console.log('stateData:',stateData);
+      console.log('stateData.restoredState:',stateData.restoredState)
       dispatch(reconnect(stateData))
     }
 

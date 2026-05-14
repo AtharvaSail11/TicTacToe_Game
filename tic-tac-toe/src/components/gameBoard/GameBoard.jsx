@@ -15,6 +15,8 @@ const GameBoard=({ws,currentDevice,moves,setMoves})=>{
         Mobile:"h-[300px] w-[300px]"
     }
 
+    console.log('moves array inside gameBoard:',moves);
+
     const {gameId,myId,oppId,Symbol,wsReady,isWaiting,gameState}=useSelector((state)=>state.gameStateSlice)
 
     const dispatch=useDispatch();

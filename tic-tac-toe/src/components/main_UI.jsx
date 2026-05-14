@@ -15,7 +15,14 @@ const Main_UI=({ws,currentDevice})=>{
     const {name,oppName,Symbol,isWaiting,restoredState}=useSelector((state)=>state.gameStateSlice)
 
     useEffect(()=>{
-        setMoves(restoredState);
+        console.log('restoredState:',restoredState);
+        const moveObj=[]
+        for(let moveIdx in restoredState){
+            if(restoredState[moveIdx] !== ''){
+                moveObj.push({pos:parseInt(moveIdx)+1,move:restoredState[moveIdx]});
+            }
+        }
+        setMoves([...moveObj]);
     },[restoredState])
 
 

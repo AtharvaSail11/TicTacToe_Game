@@ -1,12 +1,7 @@
-// const express = require('express');
-// const app = express();
 const ws = require('ws');
-const cors = require('cors');
 const uniqueid = require('short-unique-id');
 const uid = new uniqueid({ length: 10 })
 const redis=require('redis');
-// app.use(express.json());
-// app.use(cors());
 const server = new ws.Server({ port: 8080 });
 let games = new Map();
 let rematch = new Map();
@@ -97,8 +92,10 @@ async function createRoom(data, socketId) {
         players.push({ socketId: socketId, id: uid.rnd(), name: data.payload, Symbol: 'O' });
     }
 
-
+    console.log('players array:',players)
+    console.log('players.length:',players.length);
     if (players.length === 2) {
+        console.log('creating room')
         const gameId = uid.rnd()
         // games.set(gameId, { game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" });
         await redisClient.hSet('games',gameId,JSON.stringify({ game_id: gameId, player1: players[0], player2: players[1], gameMap: ["", "", "", "", "", "", "", "", ""], currMove: "X" }))
@@ -106,6 +103,10 @@ async function createRoom(data, socketId) {
         players = [];
         // const currentGame = games.get(gameId);
         const currentGame=JSON.parse(await redisClient.hGet('games',gameId))
+        // console.log('currentGame:',currentGame);
+        // console.log('SocketStore data is:',socketStore);
+        const player1Socket=socketStore.get(currentGame.player1.socketId);
+        // console.log('player1Socket:',player1Socket);
         socketStore.get(currentGame.player1.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: currentGame.game_id, You: currentGame.player1, opponent: currentGame.player2 } }));
         socketStore.get(currentGame.player2.socketId).send(JSON.stringify({ type: "start", gameData: { game_id: currentGame.game_id, You: currentGame.player2, opponent: currentGame.player1 } }));
     }
@@ -153,7 +154,7 @@ async function handleChat(data){
 
     const chatMessageObj={name:messageData.name,messageText:messageData.messageText,id:messageData.myId}
 
-    console.log('data.payload:',messageData);
+    // console.log('data.payload:',messageData);
     let game=JSON.parse(await redisClient.hGet('games',messageData.gameId));
     let prevChats=chatData.get(messageData.gameId);
     prevChats.push(chatMessageObj);
@@ -163,12 +164,12 @@ async function handleChat(data){
             return typeof (item[1]) === 'object' && item[1].id === messageData.oppId;
     });
 
-    console.log('oppData:',oppData);
-    console.log('oppData.socketId:',oppData[1].socketId);
+    // console.log('oppData:',oppData);
+    // console.log('oppData.socketId:',oppData[1].socketId);
 
     const oppSocket=socketStore.get(oppData[1].socketId);
 
-    console.log('oppSocket:',oppSocket)
+    // console.log('oppSocket:',oppSocket)
 
     oppSocket.send(JSON.stringify({type:'updateChat',payload:chatMessageObj}));
 
@@ -190,16 +191,32 @@ async function handleReconnect(data, socketId) {
 
 
         let You = Object.entries(gameInfo).find((item) => {
-            return typeof (item[1]) === 'object' && item[1].id === data.payload.You.id;
+            return typeof (item[1]) === 'object' && item[1].id === data.payload.playerId;
+        });
+
+        let Opp = Object.entries(gameInfo).find((item) => {
+            return typeof (item[1]) === 'object' && item[1].id !== data.payload.playerId;
         });
 
         if (You) {
             const [key, obj] = You;
             obj.socketId = socketId;
         }
-        You.socketId = socketId;
+        You[1].socketId = socketId;
 
-        socketStore.get(socketId).send(JSON.stringify({ type: "yesReconnect", payload: { gameMap: newGameMap, currMove: gameInfo.currMove, updatedSocket: socketId } }));
+        // console.log('You.socketId:',You[1].socketId);
+        // console.log('socketId:',socketId);
+        // console.log('socket exists:',socketStore.has(socketId));
+        // console.log('You:',You);
+
+        const recoveryObj={gameMap: gameInfo.gameMap, currMove: gameInfo.currMove, updatedSocket: socketId,You:You[1],Opp:Opp[1],game_id:gameInfo.game_id}
+
+        // socketStore.get(socketId).send(JSON.stringify({ type: "yesReconnect", payload: { gameMap: newGameMap, currMove: gameInfo.currMove, updatedSocket: socketId } }));
+        socketStore.get(socketId).send(JSON.stringify({ type: "yesReconnect", payload: recoveryObj }));
+
+        // console.log('gameInfo:',gameInfo);
+
+        await redisClient.hSet('games',data.payload.game_id,JSON.stringify(gameInfo));
     }
 }
 
@@ -220,6 +237,7 @@ async function handleRematch(data) {
                 game.currMove = "X";
                 socketStore.get(game.player1.socketId).send(JSON.stringify({ type: "reset" }));
                 socketStore.get(game.player2.socketId).send(JSON.stringify({ type: "reset" }));
+                await redisClient.hSet('games',data.payload.gameId,game);
                 currentRematchIndex.confirmations = [];
             } else {
                 console.log("second condition executed");
@@ -261,6 +279,7 @@ server.on('connection', (socket) => {
         console.log("The data recieved is:", data);
         if (data.type === 'register') {
             createRoom(data, currentSocketId);
+            // console.log("players array",players);
         } else if (data.type === 'move') {
             handleMoves(data);
         } else if (data.type === 'rematch') {
